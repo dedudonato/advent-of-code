@@ -8,7 +8,8 @@ import (
 	"strings"
 )
 
-const DAYS = 256
+const DAYS = 80
+const SIZE = 9
 
 func main() {
 	file, err := os.Open("input")
@@ -18,29 +19,39 @@ func main() {
 	defer file.Close()
 
 	scanner := bufio.NewScanner(file)
-	lanternfish := make([]int, 0)
+	lanternfishsCount := make([]int, SIZE)
 
 	for scanner.Scan() {
 		line := scanner.Text()
 		values := strings.Split(line, ",")
 		for _, v := range values {
 			intValue, _ := strconv.Atoi(v)
-			lanternfish = append(lanternfish, intValue)
+			lanternfishsCount[intValue]++
 		}
 	}
 
 	for i := 0; i < DAYS; i++ {
-		size := len(lanternfish)
-		for j := 0; j < size; j++ {
-			lanternfishValue := lanternfish[j]
-			if lanternfishValue == 0 {
-				lanternfish[j] = 6
-				lanternfish = append(lanternfish, 8)
+		lastValue := 0
+		for j := SIZE - 1; j >= 0; j-- {
+			if j == 0 {
+				lanternfishsCount[6] += lanternfishsCount[0]
+				lanternfishsCount[8] += lanternfishsCount[0]
+				lanternfishsCount[0] = lastValue
+			} else if j == 8 {
+				lastValue = lanternfishsCount[8]
+				lanternfishsCount[8] = 0
 			} else {
-				lanternfish[j] = lanternfishValue - 1
+				temp := lanternfishsCount[j]
+				lanternfishsCount[j] = lastValue
+				lastValue = temp
 			}
 		}
 	}
 
-	fmt.Println(len(lanternfish))
+	sum := 0
+	for _, v := range lanternfishsCount {
+		sum += v
+	}
+
+	fmt.Println(sum)
 }
